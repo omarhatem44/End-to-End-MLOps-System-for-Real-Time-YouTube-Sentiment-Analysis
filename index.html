@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>YouTube Sentiment Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body style="font-family:Arial;text-align:center">
+
+<h1>YouTube Comment Sentiment Analysis</h1>
+
+<p>Paste comments (one comment per line)</p>
+
+<textarea id="comments" style="width:400px;height:200px"></textarea>
+
+<br><br>
+
+<button onclick="analyze()">Analyze</button>
+
+<br><br>
+
+<canvas id="chart" width="400"></canvas>
+
+<script>
+
+async function analyze(){
+
+const text=document.getElementById("comments").value
+
+const comments=text.split("\n").filter(c=>c.trim()!="")
+
+const response=await fetch("http://18.205.239.142:5000/analyze",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({comments:comments})
+})
+
+const data=await response.json()
+
+const ctx=document.getElementById("chart")
+
+new Chart(ctx,{
+type:"pie",
+data:{
+labels:["Positive","Neutral","Negative"],
+datasets:[{
+data:[
+data.positive,
+data.neutral,
+data.negative
+],
+backgroundColor:[
+"#22c55e",
+"#94a3b8",
+"#ef4444"
+]
+}]
+}
+})
+
+}
+
+</script>
+
+</body>
+</html>
