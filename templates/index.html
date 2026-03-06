@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>YouTube Sentiment Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body style="text-align:center;font-family:Arial">
+
+<h1>YouTube Comment Sentiment Dashboard</h1>
+
+<textarea id="comments" style="width:400px;height:200px"></textarea>
+
+<br><br>
+
+<button onclick="analyze()">Analyze</button>
+
+<br><br>
+
+<canvas id="chart" width="400"></canvas>
+
+<script>
+async function analyze() {
+    const text = document.getElementById("comments").value.trim();
+    if (!text) {
+        alert("من فضلك أدخل تعليقات");
+        return;
+    }
+
+    const comments = text.split("\n").filter(c => c.trim() !== "");
+
+    try {
+        const response = await fetch("/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ comments: comments })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+            alert("خطأ: " + data.error);
+            return;
+        }
+
+        console.log("النتيجة:", data);
+
+        // عرض النتيجة تحت الزر (اختياري)
+        let resultDiv = document.getElementById("result");
+        if (!resultDiv) {
+            resultDiv = document.createElement("div");
+            resultDiv.id = "result";
+            resultDiv.style.marginTop = "20px";
+            document.body.appendChild(resultDiv);
+        }
+        resultDiv.innerHTML = `
+            <h3>النتيجة:</h3>
+            <p>إجمالي التعليقات: ${data.total}</p>
+            <p>إيجابي: ${data.positive} (${data.percent_positive}%)</p>
+            <p>محايد: ${data.neutral} (${data.percent_neutral}%)</p>
+            <p>سلبي: ${data.negative} (${data.percent_negative}%)</p>
+        `;
+
+        // تحديث الـ pie chart
+        updateChart(data);
+
+    } catch (err) {
+        console.error("خطأ في التحليل:", err);
+        alert("حصل خطأ أثناء التحليل: " + err.message);
+    }
+}
+
+// دالة لتحديث الـ chart
+function updateChart(data) {
+    const ctx = document.getElementById("chart").getContext("2d");
+
+    // لو الـ chart موجود بالفعل، دمره أولاً عشان نعمل واحد جديد
+    if (window.myChart instanceof Chart) {
+        window.myChart.destroy();
+    }
+
+    window.myChart = new Chart(ctx, {
+        type: "pie",
+        data: {
+            labels: ["Positive", "Neutral", "Negative"],
+            datasets: [{
+                data: [data.positive, data.neutral, data.negative],
+                backgroundColor: ["#36A2EB", "#C9CBCF", "#FF6384"],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: "top" },
+                title: { display: true, text: "توزيع المشاعر" }
+            }
+        }
+    });
+}
+</script>
+
+</body>
+</html>

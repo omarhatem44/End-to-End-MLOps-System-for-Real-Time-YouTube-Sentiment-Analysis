@@ -327,9 +327,48 @@ def generate_trend_graph():
     
    
 
-@app.route('/dashboard')
-def dashboard():
-    return render_template("dashboard.html")
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    data = request.get_json()
+    comments = data.get('comments', [])
+
+    if not comments:
+        return jsonify({"error": "No comments provided"}), 400
+
+    try:
+        # Preprocess
+        preprocessed = [preprocess_comment(c) for c in comments]
+
+        # Vectorize
+        transformed = vectorizer.transform(preprocessed)
+        dense = transformed.toarray()
+
+        # Predict
+        predictions = model.predict(dense).tolist()
+
+        # Count sentiments (افترض -1 = Negative, 0 = Neutral, 1 = Positive)
+        from collections import Counter
+        counts = Counter(predictions)
+        positive = counts.get(1, 0)
+        neutral = counts.get(0, 0)
+        negative = counts.get(-1, 0)
+
+        # Return data suitable for pie chart + more
+        result = {
+            "positive": positive,
+            "neutral": neutral,
+            "negative": negative,
+            "total": len(comments),
+            "percent_positive": round(positive / len(comments) * 100, 1) if comments else 0,
+            "percent_neutral": round(neutral / len(comments) * 100, 1) if comments else 0,
+            "percent_negative": round(negative / len(comments) * 100, 1) if comments else 0,
+            "predictions": predictions  # optional
+        }
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 
