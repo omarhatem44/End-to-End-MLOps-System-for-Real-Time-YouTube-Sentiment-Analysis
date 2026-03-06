@@ -322,6 +322,46 @@ def generate_trend_graph():
     except Exception as e:
         app.logger.error(f"Error in /generate_trend_graph: {e}")
         return jsonify({"error": f"Trend graph generation failed: {str(e)}"}), 500
+    
+
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    data = request.json
+    comments = data.get('comments')
+
+    if not comments:
+        return jsonify({"error": "No comments provided"}), 400
+
+    try:
+        # Preprocess comments
+        preprocessed_comments = [preprocess_comment(comment) for comment in comments]
+
+        # Vectorize
+        transformed_comments = vectorizer.transform(preprocessed_comments)
+
+        dense_comments = transformed_comments.toarray()
+
+        # Predict
+        predictions = model.predict(dense_comments).tolist()
+
+        # Count sentiments
+        positive = predictions.count(1)
+        neutral = predictions.count(0)
+        negative = predictions.count(-1)
+
+        total = len(predictions)
+
+        results = {
+            "positive": round((positive/total)*100,2),
+            "neutral": round((neutral/total)*100,2),
+            "negative": round((negative/total)*100,2),
+            "total_comments": total
+        }
+
+        return jsonify(results)
+
+    except Exception as e:
+        return jsonify({"error": f"Analysis failed: {str(e)}"}), 500
 
 
 
