@@ -153,9 +153,12 @@ POST /predict
 {
  "comment": "This video is amazing!"
 }
+```
 
 ## Output:
 
+```json
 {
  "sentiment": "Positive"
 }
+```
