@@ -76,4 +76,86 @@ Stacking combines predictions from multiple models and trains a meta-model on to
 
 The machine learning pipeline is automated using **DVC (Data Version Control)**.
 
-Pipeline stages:
+### Pipeline stages:
+
+Data Ingestion
+↓
+Data Preprocessing
+↓
+Feature Engineering
+↓
+Model Training
+↓
+Model Evaluation
+↓
+Model Registration
+
+Advantages:
+
+- Reproducible pipelines
+- Data versioning
+- Automated ML workflows
+
+---
+
+# 📊 Experiment Tracking
+
+All experiments are tracked using **MLflow**.
+
+MLflow tracks:
+
+- Model parameters
+- Training metrics
+- Model artifacts
+- Model versions
+
+This allows easy comparison between experiments.
+
+---
+
+# 🏗 Project Structure
+
+Youtube-Sentiment-Insights
+│
+├── src
+│ ├── data_ingestion
+│ ├── data_preprocessing
+│ ├── model_training
+│ └── model_evaluation
+│
+├── flask_api
+│ └── Flask API for model inference
+│
+├── Note-books
+│ └── EDA and experimentation
+│
+├── dvc.yaml
+├── params.yaml
+├── Dockerfile
+├── requirements.txt
+├── setup.py
+└── README.md
+
+
+---
+
+# 🌐 API Deployment
+
+The trained model is deployed using **Flask API**.
+
+### Example Request
+
+POST /predict
+
+## Input:
+
+```json
+{
+ "comment": "This video is amazing!"
+}
+
+## Output:
+
+{
+ "sentiment": "Positive"
+}
