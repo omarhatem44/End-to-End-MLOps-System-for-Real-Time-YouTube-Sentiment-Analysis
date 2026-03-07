@@ -38,3 +38,42 @@ Represents text as word frequency vectors.
 Example:
 
 Sentence:
+I love this video
+
+Vector representation:
+[0,1,0,1,2]
+
+
+---
+
+### TF-IDF
+
+TF-IDF improves Bag of Words by giving higher importance to rare words and reducing the importance of common words.
+
+---
+
+# 🤖 Models Used
+
+Multiple machine learning models were trained and evaluated.
+
+Examples include:
+
+- Logistic Regression
+- Naive Bayes
+- Linear Models
+
+---
+
+# 🔗 Ensemble Learning
+
+To improve performance, the project implements a **Stacking Classifier**.
+
+Stacking combines predictions from multiple models and trains a meta-model on top of them to produce better predictions.
+
+---
+
+# ⚙️ MLOps Pipeline
+
+The machine learning pipeline is automated using **DVC (Data Version Control)**.
+
+Pipeline stages:
