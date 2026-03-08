@@ -115,7 +115,7 @@ This allows easy comparison between experiments.
 
 # 🏗 Project Structure
 
-Youtube-Sentiment-Insights
+### Youtube-Sentiment-Insights
 │
 ├── src
 │ ├── data_ingestion
@@ -136,29 +136,4 @@ Youtube-Sentiment-Insights
 ├── setup.py
 └── README.md
 
-
 ---
-
-# 🌐 API Deployment
-
-The trained model is deployed using **Flask API**.
-
-### Example Request
-
-POST /predict
-
-## Input:
-
-```json
-{
- "comment": "This video is amazing!"
-}
-```
-
-## Output:
-
-```json
-{
- "sentiment": "Positive"
-}
-```
