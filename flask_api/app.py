@@ -104,31 +104,31 @@ def home():
 @app.route("/predict", methods=["POST"])
 def predict():
 
-    data = request.json
-    comments = extract_comments(data)
-
-    if not comments:
-        return jsonify({"error":"No comments provided"}),400
-
     try:
 
-        preprocessed = [preprocess_comment(c) for c in comments]
+        data = request.json
+        comments = extract_comments(data)
 
-        transformed = vectorizer.transform(preprocessed)
+        if not comments:
+            return jsonify({"error": "No comments provided"}), 400
 
-        dense = transformed.toarray()
+        preprocessed_comments = [preprocess_comment(c) for c in comments]
 
-        predictions = model.predict(dense).tolist()
+        transformed_comments = vectorizer.transform(preprocessed_comments)
+
+        dense_comments = transformed_comments.toarray()
+
+        predictions = model.predict(dense_comments).tolist()
 
         response = [
-            {"comment":c,"sentiment":int(p)}
-            for c,p in zip(comments,predictions)
+            {"comment": c, "sentiment": p}
+            for c, p in zip(comments, predictions)
         ]
 
         return jsonify(response)
 
     except Exception as e:
-        return jsonify({"error":str(e)}),500
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/analyze", methods=["POST"])
