@@ -192,7 +192,7 @@ def generate_chart():
         int(counts.get("-1",0))
     ]
 
-    colors = ["#36A2EB","#C9CBCF","#FF6384"]
+    colors = ["#36A2EB","#C9CBCF","#AE1233"]
 
     plt.figure(figsize=(6,6))
     plt.pie(sizes,labels=labels,colors=colors,autopct="%1.1f%%")
