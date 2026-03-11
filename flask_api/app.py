@@ -120,9 +120,43 @@ def predict():
 
         predictions = model.predict(dense_comments).tolist()
 
+        return jsonify({
+            "predictions": predictions
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+@app.route("/predict_with_timestamps", methods=["POST"])
+def predict_with_timestamps():
+
+    try:
+
+        data = request.json
+        comments_data = data.get("comments")
+
+        if not comments_data:
+            return jsonify({"error": "No comments provided"}), 400
+
+        comments = [item["text"] for item in comments_data]
+        timestamps = [item["timestamp"] for item in comments_data]
+
+        preprocessed = [preprocess_comment(c) for c in comments]
+
+        transformed = vectorizer.transform(preprocessed)
+
+        dense = transformed.toarray()
+
+        predictions = model.predict(dense).tolist()
+
         response = [
-            {"comment": c, "sentiment": p}
-            for c, p in zip(comments, predictions)
+            {
+                "comment": comment,
+                "sentiment": str(sentiment),
+                "timestamp": timestamp
+            }
+            for comment, sentiment, timestamp in zip(comments, predictions, timestamps)
         ]
 
         return jsonify(response)
