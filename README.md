@@ -51,7 +51,7 @@ The project demonstrates a complete **MLOps workflow**: data versioning with DVC
 ---
 ## 🎥 Demo
 
-[![Watch Demo](demo_thumbnail.png)](https://youtu.be/vyts7NzzUWk)
+[![Watch Demo](demo.png)](https://youtu.be/vyts7NzzUWk)
 
 ---
 
@@ -355,5 +355,6 @@ curl -X POST http://localhost:5000/predict \
 <p align="center">
   <i>Built end-to-end with production MLOps practices in mind 🚀</i>
 </p>
+
 
 
