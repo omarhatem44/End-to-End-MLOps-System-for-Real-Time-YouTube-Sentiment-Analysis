@@ -49,12 +49,9 @@ The project demonstrates a complete **MLOps workflow**: data versioning with DVC
 - ✅ **GitHub Actions** for fully automated CI/CD
 
 ---
-
 ## 🎥 Demo
 
-> 📸 ## 🎥 Demo
-
-*[![Watch Demo](thumbnail.png)]([https://youtube.com/watch?v=YOUR_VIDEO_ID](https://youtu.be/vyts7NzzUWk))*
+[![Watch Demo](thumbnail.png)](https://youtu.be/vyts7NzzUWk)
 
 ---
 
@@ -358,3 +355,4 @@ curl -X POST http://localhost:5000/predict \
 <p align="center">
   <i>Built end-to-end with production MLOps practices in mind 🚀</i>
 </p>
+
