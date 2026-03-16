@@ -317,10 +317,10 @@ curl -X POST http://localhost:5000/predict \
 
 | Metric | Score |
 |--------|-------|
-| **Accuracy** | ~XX% |
-| **F1-Score (Macro)** | ~XX% |
-| **Precision** | ~XX% |
-| **Recall** | ~XX% |
+| **Accuracy** | ~ 87% |
+| **F1-Score (Macro)** |  ~79%  |
+| **Precision** | ~77% |
+| **Recall** | ~77%|
 
 > Confusion matrix saved as `confusion_matrix_Test Data.png`
 
