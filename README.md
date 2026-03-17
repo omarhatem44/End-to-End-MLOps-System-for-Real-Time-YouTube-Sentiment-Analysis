@@ -279,8 +279,8 @@ Push to main branch
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/omarhatem44/Youtube-Sentiment-Insights.git
-cd Youtube-Sentiment-Insights
+git clone https://github.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.git
+cd End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis
 ```
 
 ### 2. Install dependencies
