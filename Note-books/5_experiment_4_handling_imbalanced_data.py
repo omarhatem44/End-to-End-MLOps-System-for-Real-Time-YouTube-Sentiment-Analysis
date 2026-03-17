@@ -18,7 +18,7 @@ mlflow.set_tracking_uri("http://34.236.154.226:5000")
 # Set or create an experiment
 mlflow.set_experiment("Exp 4 - Handling Imbalanced Data")
 
-df = pd.read_csv(r'D:\omar\MLOps\YouTube Viewer Sentiment-freeCodeCamp\dataset.csv').dropna(subset=['clean_comment'])
+df = pd.read_csv(r'D:\omar\MLOps\Youtube-Sentiment-Insights-Done\Note-books\dataset.csv').dropna(subset=['clean_comment'])
 
 
 # Step 1: Function to run the experiment

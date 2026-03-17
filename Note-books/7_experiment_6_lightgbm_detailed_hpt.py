@@ -15,7 +15,7 @@ mlflow.set_tracking_uri("http://34.236.154.226:5000")
 # Set or create an experiment
 mlflow.set_experiment("LightGBM HP Tuning")
 
-df = pd.read_csv(r'D:\omar\MLOps\YouTube Viewer Sentiment-freeCodeCamp\dataset.csv').dropna(subset=['clean_comment'])
+df = pd.read_csv(r'D:\omar\MLOps\Youtube-Sentiment-Insights-Done\Note-books\dataset.csv').dropna(subset=['clean_comment'])
 
 # Step 1: Remap the class labels from [-1, 0, 1] to [2, 0, 1]
 df['category'] = df['category'].map({-1: 2, 0: 0, 1: 1})
