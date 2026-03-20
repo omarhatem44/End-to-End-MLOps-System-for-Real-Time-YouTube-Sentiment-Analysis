@@ -11,6 +11,7 @@
 ![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
 ![DVC](https://img.shields.io/badge/DVC-Data%20Versioning-945DD6?style=for-the-badge&logo=dvc&logoColor=white)
 ![MLflow](https://img.shields.io/badge/MLflow-Experiment%20Tracking-0194E2?style=for-the-badge&logo=mlflow&logoColor=white)
+![DagsHub](https://img.shields.io/badge/DagsHub-MLflow%20Remote-orange?style=for-the-badge&logo=dagshub&logoColor=white)
 
 **A production-ready MLOps pipeline that classifies YouTube comments as positive, negative, or neutral — surfaced directly inside the browser via a Chrome Extension.**
 
@@ -42,14 +43,14 @@
 
 **YouTube Sentiment Insights** is a full end-to-end ML system that classifies YouTube comments into **positive**, **negative**, or **neutral** — and surfaces results directly in the browser via a **Chrome Extension**.
 
-The project demonstrates a complete **MLOps workflow**: data versioning with DVC, experiment tracking with MLflow (hosted on AWS EC2 + S3), model serving with Flask, containerization with Docker, and automated cloud deployment on AWS — all triggered via GitHub Actions CI/CD.
+The project demonstrates a complete **MLOps workflow**: data versioning with DVC, experiment tracking with MLflow (hosted on **DagsHub**), model serving with Flask, containerization with Docker, and automated cloud deployment on AWS — all triggered via GitHub Actions CI/CD.
 
 ### Key Highlights
 
 - ✅ **LightGBM** classifier with TF-IDF text preprocessing pipeline
 - ✅ **Chrome Extension** — analyze any YouTube video's comments without leaving the browser
 - ✅ **Flask REST API** for real-time inference
-- ✅ **MLflow** experiment tracking hosted on AWS EC2, artifacts stored in S3
+- ✅ **MLflow** experiment tracking hosted on **DagsHub** — full run history, metrics & artifacts logged remotely
 - ✅ **Dockerized** for reproducible, portable deployment
 - ✅ **AWS** cloud deployment (EC2 + ECR)
 - ✅ **DVC** for data, model, and pipeline versioning
@@ -106,7 +107,7 @@ The project demonstrates a complete **MLOps workflow**: data versioning with DVC
 | **NLP & Preprocessing** | NLTK, Regex, Custom Text Pipeline |
 | **API Serving** | Flask, Gunicorn, Jinja2 Templates |
 | **Frontend / Extension** | Chrome Extension (JS, HTML, CSS) |
-| **Experiment Tracking** | MLflow (hosted on AWS EC2, artifacts on S3) |
+| **Experiment Tracking** | MLflow (hosted on DagsHub) |
 | **Containerization** | Docker, `.dockerignore` |
 | **Data & Model Versioning** | DVC (`dvc.yaml`, `dvc.lock`, `.dvc/`) |
 | **Experiment Config** | `params.yaml` |
@@ -221,14 +222,16 @@ dvc pull   # Download tracked artifacts
 
 ---
 
-## 📈 Experiment Tracking (MLflow)
+## 📈 Experiment Tracking (MLflow on DagsHub)
 
-Experiment tracking is handled by **MLflow**, hosted on an AWS EC2 instance with artifacts stored in an S3 bucket — giving full visibility into every training run.
+Experiment tracking is handled by **MLflow**, hosted remotely on **DagsHub** — giving full visibility into every training run with zero infrastructure setup.
+
+🔗 **[View Live MLflow Experiments on DagsHub](https://dagshub.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.mlflow/#/experiments)**
 
 ```
-MLflow Tracking Server
-  ├── Host: AWS EC2 (port 5001)
-  ├── Artifact Store: S3 bucket
+MLflow Tracking Server (DagsHub)
+  ├── Host: DagsHub Remote MLflow Server
+  ├── Artifact Store: DagsHub artifact storage
   └── Tracks: parameters, metrics, model artifacts per run
 ```
 
@@ -237,13 +240,18 @@ MLflow Tracking Server
 - Evaluation metrics: Accuracy, F1-Score, Precision, Recall
 - Model artifacts and confusion matrix
 
-**Start the MLflow server locally:**
+**Configure MLflow to log to DagsHub:**
 ```bash
-mlflow server \
-  --backend-store-uri sqlite:///mlflow.db \
-  --default-artifact-root s3://your-bucket/mlflow \
-  --host 0.0.0.0 \
-  --port 5001
+export MLFLOW_TRACKING_URI=https://dagshub.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.mlflow
+export MLFLOW_TRACKING_USERNAME=<your-dagshub-username>
+export MLFLOW_TRACKING_PASSWORD=<your-dagshub-token>
+```
+
+Or in Python:
+```python
+import mlflow
+
+mlflow.set_tracking_uri("https://dagshub.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.mlflow")
 ```
 
 ---
@@ -372,7 +380,7 @@ curl -X POST http://localhost:5000/predict \
 | **Precision** | ~XX% |
 | **Recall** | ~XX% |
 
-> Metrics tracked and logged via **MLflow** — view full experiment history on the tracking server.
+> Metrics tracked and logged via **MLflow on DagsHub** — [view full experiment history →](https://dagshub.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.mlflow/#/experiments)
 
 [![Confusion Matrix](https://github.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis/raw/main/confusion_matrix_Test%20Data.png)](https://github.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis/blob/main/confusion_matrix_Test%20Data.png)
 
@@ -384,8 +392,8 @@ curl -X POST http://localhost:5000/predict \
 |---|---|
 | **Data Versioning** | DVC tracks raw data, features & model artifacts in `artifacts/` |
 | **Pipeline Reproducibility** | `dvc repro` re-runs only changed stages defined in `dvc.yaml` |
-| **Experiment Tracking** | MLflow hosted on AWS EC2 — logs params, metrics & artifacts per run |
-| **Artifact Storage** | MLflow artifacts stored in AWS S3 bucket |
+| **Experiment Tracking** | MLflow hosted on **DagsHub** — logs params, metrics & artifacts per run · [View Experiments ↗](https://dagshub.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.mlflow/#/experiments) |
+| **Artifact Storage** | MLflow artifacts stored via DagsHub remote storage |
 | **Model Serving** | Production Flask API with health check endpoint |
 | **Containerization** | Dockerfile + `.dockerignore` for consistent dev/prod environment |
 | **CI/CD Automation** | GitHub Actions builds, tests, and deploys on every push to `main` |
