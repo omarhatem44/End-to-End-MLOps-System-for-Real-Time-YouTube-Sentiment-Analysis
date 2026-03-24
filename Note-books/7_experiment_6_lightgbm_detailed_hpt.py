@@ -1,145 +1,149 @@
 import mlflow
+import mlflow.sklearn
+import dagshub
+
 import pandas as pd
+import optuna
+import pickle
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
+
 from imblearn.over_sampling import SMOTE
-import mlflow
-import mlflow.sklearn
-import optuna
 from lightgbm import LGBMClassifier
-import matplotlib.pyplot as plt
 
-# Step 2: Set up the MLflow tracking server
-mlflow.set_tracking_uri("http://34.236.154.226:5000")
-# Set or create an experiment
-mlflow.set_experiment("LightGBM HP Tuning")
+# 🔥 ربط DagsHub
+dagshub.init(
+    repo_owner="omarhatem44",
+    repo_name="End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis",  # غيرها لو عايز repo تاني
+    mlflow=True
+)
 
-df = pd.read_csv(r'D:\omar\MLOps\Youtube-Sentiment-Insights-Done\Note-books\dataset.csv').dropna(subset=['clean_comment'])
+# ✅ اسم experiment الجديد
+mlflow.set_experiment("Experiment_6_lightgbm_detailed_hpt")
 
-# Step 1: Remap the class labels from [-1, 0, 1] to [2, 0, 1]
+# Load data
+df = pd.read_csv(
+    r'D:\omar\MLOps\Youtube-Sentiment-Insights-Done\Note-books\dataset.csv'
+).dropna(subset=['clean_comment'])
+
+# Remap labels
 df['category'] = df['category'].map({-1: 2, 0: 0, 1: 1})
-
-# Step 2: Remove rows where the target labels (category) are NaN
 df = df.dropna(subset=['category'])
 
-# Step 3: TF-IDF vectorizer setup
-ngram_range = (1, 3)  # Trigram
-max_features = 1000  # Set max_features to 1000
-vectorizer = TfidfVectorizer(ngram_range=ngram_range, max_features=max_features)
+# Vectorization
+ngram_range = (1, 3)
+max_features = 1000
+
+vectorizer = TfidfVectorizer(
+    ngram_range=ngram_range,
+    max_features=max_features
+)
+
 X = vectorizer.fit_transform(df['clean_comment'])
 y = df['category']
 
-# Step 4: Apply SMOTE to handle class imbalance
+# 🔥 Handle imbalance
 smote = SMOTE(random_state=42)
 X_resampled, y_resampled = smote.fit_resample(X, y)
 
-# Step 5: Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.2, random_state=42, stratify=y_resampled)
+# Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X_resampled,
+    y_resampled,
+    test_size=0.2,
+    random_state=42,
+    stratify=y_resampled
+)
 
-# Function to log results in MLflow
-def log_mlflow(model_name, model, X_train, X_test, y_train, y_test, params, trial_number):
+# 🔥 Logging function
+def log_mlflow(model_name, model, params, trial_number):
     with mlflow.start_run():
-        # Log model type and trial number
-        mlflow.set_tag("mlflow.runName", f"Trial_{trial_number}_{model_name}_SMOTE_TFIDF_Trigrams")
-        mlflow.set_tag("experiment_type", "algorithm_comparison")
 
-        # Log algorithm name as a parameter
+        mlflow.set_tag("mlflow.runName", f"Trial_{trial_number}_LightGBM")
+        mlflow.set_tag("platform", "DagsHub")
+        mlflow.set_tag("experiment_type", "hpt_detailed")
+
         mlflow.log_param("algo_name", model_name)
 
-        # Log hyperparameters
+        # Log params
         for key, value in params.items():
             mlflow.log_param(key, value)
 
-        # Train model
+        # Train
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
 
-        # Log accuracy
+        # Metrics
         accuracy = accuracy_score(y_test, y_pred)
         mlflow.log_metric("accuracy", accuracy)
 
-        # Log classification report
-        classification_rep = classification_report(y_test, y_pred, output_dict=True)
-        for label, metrics in classification_rep.items():
+        report = classification_report(y_test, y_pred, output_dict=True)
+
+        for label, metrics in report.items():
             if isinstance(metrics, dict):
                 for metric, value in metrics.items():
                     mlflow.log_metric(f"{label}_{metric}", value)
 
-        # Log the model
-        mlflow.sklearn.log_model(model, f"{model_name}_model")
+        # Log model
+        mlflow.sklearn.log_model(model, "lightgbm_model")
 
         return accuracy
-# Step 6: Optuna objective function for LightGBM
-def objective_lightgbm(trial):
-    # Hyperparameter space to explore
-    n_estimators = trial.suggest_int('n_estimators', 100, 1000)
-    learning_rate = trial.suggest_float('learning_rate', 1e-4, 1e-1, log=True)
-    max_depth = trial.suggest_int('max_depth', 3, 15)
-    num_leaves = trial.suggest_int('num_leaves', 20, 150)
-    min_child_samples = trial.suggest_int('min_child_samples', 10, 100)
-    colsample_bytree = trial.suggest_float('colsample_bytree', 0.5, 1.0)
-    subsample = trial.suggest_float('subsample', 0.5, 1.0)
-    reg_alpha = trial.suggest_float('reg_alpha', 1e-4, 10.0, log=True)  # L1 regularization
-    reg_lambda = trial.suggest_float('reg_lambda', 1e-4, 10.0, log=True)  # L2 regularization
 
-    # Log trial parameters
+
+# 🔥 Optuna objective
+def objective_lightgbm(trial):
+
     params = {
-        'n_estimators': n_estimators,
-        'learning_rate': learning_rate,
-        'max_depth': max_depth,
-        'num_leaves': num_leaves,
-        'min_child_samples': min_child_samples,
-        'colsample_bytree': colsample_bytree,
-        'subsample': subsample,
-        'reg_alpha': reg_alpha,
-        'reg_lambda': reg_lambda
+        'n_estimators': trial.suggest_int('n_estimators', 100, 1000),
+        'learning_rate': trial.suggest_float('learning_rate', 1e-4, 1e-1, log=True),
+        'max_depth': trial.suggest_int('max_depth', 3, 15),
+        'num_leaves': trial.suggest_int('num_leaves', 20, 150),
+        'min_child_samples': trial.suggest_int('min_child_samples', 10, 100),
+        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 1.0),
+        'subsample': trial.suggest_float('subsample', 0.5, 1.0),
+        'reg_alpha': trial.suggest_float('reg_alpha', 1e-4, 10.0, log=True),
+        'reg_lambda': trial.suggest_float('reg_lambda', 1e-4, 10.0, log=True)
     }
 
-    # Create LightGBM model
-    model = LGBMClassifier(n_estimators=n_estimators,
-                           learning_rate=learning_rate,
-                           max_depth=max_depth,
-                           num_leaves=num_leaves,
-                           min_child_samples=min_child_samples,
-                           colsample_bytree=colsample_bytree,
-                           subsample=subsample,
-                           reg_alpha=reg_alpha,
-                           reg_lambda=reg_lambda,
-                           random_state=42)
+    model = LGBMClassifier(**params, random_state=42)
 
-    # Log each trial as a separate run in MLflow
-    accuracy = log_mlflow("LightGBM", model, X_train, X_test, y_train, y_test, params, trial.number)
-
-    return accuracy
+    return log_mlflow("LightGBM", model, params, trial.number)
 
 
-# Step 7: Run Optuna for LightGBM, log the best model, and plot the importance of each parameter
+# 🔥 Run Optuna
 def run_optuna_experiment():
     study = optuna.create_study(direction="maximize")
-    study.optimize(objective_lightgbm, n_trials=100)  # Increased to 100 trials
+    study.optimize(objective_lightgbm, n_trials=100)
 
-    # Get the best parameters
     best_params = study.best_params
-    best_model = LGBMClassifier(n_estimators=best_params['n_estimators'],
-                                learning_rate=best_params['learning_rate'],
-                                max_depth=best_params['max_depth'],
-                                num_leaves=best_params['num_leaves'],
-                                min_child_samples=best_params['min_child_samples'],
-                                colsample_bytree=best_params['colsample_bytree'],
-                                subsample=best_params['subsample'],
-                                reg_alpha=best_params['reg_alpha'],
-                                reg_lambda=best_params['reg_lambda'],
-                                random_state=42)
 
-    # Log the best model with MLflow and print the classification report
-    log_mlflow("LightGBM", best_model, X_train, X_test, y_train, y_test, best_params, "Best")
+    # 🔥 Log best model separately
+    with mlflow.start_run():
 
-    # Plot parameter importance
-    optuna.visualization.plot_param_importances(study).show()
+        mlflow.set_tag("mlflow.runName", "LightGBM_BEST_MODEL")
+        mlflow.set_tag("platform", "DagsHub")
 
-    # Plot optimization history
-    optuna.visualization.plot_optimization_history(study).show()
+        for key, value in best_params.items():
+            mlflow.log_param(key, value)
 
-    # Run the experiment for LightGBM
+        best_model = LGBMClassifier(**best_params, random_state=42)
+        best_model.fit(X_train, y_train)
+
+        y_pred = best_model.predict(X_test)
+
+        accuracy = accuracy_score(y_test, y_pred)
+        mlflow.log_metric("accuracy", accuracy)
+
+        # 🔥 Save vectorizer (مهم جداً)
+        with open("vectorizer.pkl", "wb") as f:
+            pickle.dump(vectorizer, f)
+
+        mlflow.log_artifact("vectorizer.pkl")
+
+        mlflow.sklearn.log_model(best_model, "best_lightgbm_model")
+
+
+# Run
 run_optuna_experiment()

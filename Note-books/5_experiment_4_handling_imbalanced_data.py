@@ -1,118 +1,154 @@
 import mlflow
+import mlflow.sklearn
+import dagshub
+
 from imblearn.over_sampling import SMOTE, ADASYN
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.combine import SMOTEENN
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-import mlflow
-import mlflow.sklearn
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-import os
+import pickle
 
-# Step 2: Set up the MLflow tracking server
-mlflow.set_tracking_uri("http://34.236.154.226:5000")
-# Set or create an experiment
-mlflow.set_experiment("Exp 4 - Handling Imbalanced Data")
+# 🔥 ربط DagsHub بدل MLflow server
+dagshub.init(
+    repo_owner="omarhatem44",
+    repo_name="End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis",  # غيرها لو عايز repo تاني
+    mlflow=True
+)
 
-df = pd.read_csv(r'D:\omar\MLOps\Youtube-Sentiment-Insights-Done\Note-books\dataset.csv').dropna(subset=['clean_comment'])
+# ✅ اسم experiment الجديد
+mlflow.set_experiment("Experiment_4_handling_imbalanced_data")
+
+# Load data
+df = pd.read_csv(
+    r'D:\omar\MLOps\Youtube-Sentiment-Insights-Done\Note-books\dataset.csv'
+).dropna(subset=['clean_comment'])
 
 
-# Step 1: Function to run the experiment
 def run_imbalanced_experiment(imbalance_method):
-    ngram_range = (1, 3)  # Trigram setting
-    max_features = 10000  # Set max_features to 1000 for TF-IDF
+    ngram_range = (1, 3)
+    max_features = 10000
 
-    # Step 4: Train-test split before vectorization and resampling
-    X_train, X_test, y_train, y_test = train_test_split(df['clean_comment'], df['category'], test_size=0.2, random_state=42, stratify=df['category'])
+    # Split
+    X_train, X_test, y_train, y_test = train_test_split(
+        df['clean_comment'],
+        df['category'],
+        test_size=0.2,
+        random_state=42,
+        stratify=df['category']
+    )
 
-    # Step 2: Vectorization using TF-IDF, fit on training data only
-    vectorizer = TfidfVectorizer(ngram_range=ngram_range, max_features=max_features)
-    X_train_vec = vectorizer.fit_transform(X_train)  # Fit on training data
-    X_test_vec = vectorizer.transform(X_test)  # Transform test data
+    # Vectorization
+    vectorizer = TfidfVectorizer(
+        ngram_range=ngram_range,
+        max_features=max_features
+    )
 
-    # Step 3: Handle class imbalance based on the selected method (only applied to the training set)
+    X_train_vec = vectorizer.fit_transform(X_train)
+    X_test_vec = vectorizer.transform(X_test)
+
+    # Handle imbalance
     if imbalance_method == 'class_weights':
-        # Use class_weight in Random Forest
         class_weight = 'balanced'
     else:
-        class_weight = None  # Do not apply class_weight if using resampling
+        class_weight = None
 
-        # Resampling Techniques (only apply to the training set)
         if imbalance_method == 'oversampling':
             smote = SMOTE(random_state=42)
             X_train_vec, y_train = smote.fit_resample(X_train_vec, y_train)
+
         elif imbalance_method == 'adasyn':
             adasyn = ADASYN(random_state=42)
             X_train_vec, y_train = adasyn.fit_resample(X_train_vec, y_train)
+
         elif imbalance_method == 'undersampling':
             rus = RandomUnderSampler(random_state=42)
             X_train_vec, y_train = rus.fit_resample(X_train_vec, y_train)
+
         elif imbalance_method == 'smote_enn':
             smote_enn = SMOTEENN(random_state=42)
             X_train_vec, y_train = smote_enn.fit_resample(X_train_vec, y_train)
 
-    # Step 5: Define and train a Random Forest model
-    with mlflow.start_run() as run:
-        # Set tags for the experiment and run
-        mlflow.set_tag("mlflow.runName", f"Imbalance_{imbalance_method}_RandomForest_TFIDF_Trigrams")
+    with mlflow.start_run():
+
+        mlflow.set_tag("mlflow.runName", f"Imbalance_{imbalance_method}")
+        mlflow.set_tag("platform", "DagsHub")
         mlflow.set_tag("experiment_type", "imbalance_handling")
-        mlflow.set_tag("model_type", "RandomForestClassifier")
 
-        # Add a description
-        mlflow.set_tag("description", f"RandomForest with TF-IDF Trigrams, imbalance handling method={imbalance_method}")
-
-        # Log vectorizer parameters
-        mlflow.log_param("vectorizer_type", "TF-IDF")
-        mlflow.log_param("ngram_range", ngram_range)
-        mlflow.log_param("vectorizer_max_features", max_features)
-
-        # Log Random Forest parameters
+        # Parameters
         n_estimators = 200
         max_depth = 15
 
+        mlflow.log_param("vectorizer", "TF-IDF")
+        mlflow.log_param("ngram_range", ngram_range)
+        mlflow.log_param("max_features", max_features)
+        mlflow.log_param("imbalance_method", imbalance_method)
         mlflow.log_param("n_estimators", n_estimators)
         mlflow.log_param("max_depth", max_depth)
-        mlflow.log_param("imbalance_method", imbalance_method)
 
-        # Initialize and train the model
-        model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=42, class_weight=class_weight)
+        # Model
+        model = RandomForestClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            random_state=42,
+            class_weight=class_weight
+        )
+
         model.fit(X_train_vec, y_train)
-
-        # Step 6: Make predictions and log metrics
         y_pred = model.predict(X_test_vec)
 
-        # Log accuracy
+        # Metrics
         accuracy = accuracy_score(y_test, y_pred)
         mlflow.log_metric("accuracy", accuracy)
 
-        # Log classification report
-        classification_rep = classification_report(y_test, y_pred, output_dict=True)
-        for label, metrics in classification_rep.items():
+        report = classification_report(y_test, y_pred, output_dict=True)
+
+        for label, metrics in report.items():
             if isinstance(metrics, dict):
                 for metric, value in metrics.items():
                     mlflow.log_metric(f"{label}_{metric}", value)
 
-        # Log confusion matrix
-        conf_matrix = confusion_matrix(y_test, y_pred)
+        # Confusion Matrix (unique name)
+        cm = confusion_matrix(y_test, y_pred)
+
         plt.figure(figsize=(8, 6))
-        sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues")
-        plt.xlabel("Predicted")
-        plt.ylabel("Actual")
-        plt.title(f"Confusion Matrix: TF-IDF Trigrams, Imbalance={imbalance_method}")
-        confusion_matrix_filename = f"confusion_matrix_{imbalance_method}.png"
-        plt.savefig(confusion_matrix_filename)
-        mlflow.log_artifact(confusion_matrix_filename)
+        sns.heatmap(cm, annot=True, fmt="d")
+
+        cm_filename = f"cm_imbalance_{imbalance_method}.png"
+        plt.title(f"CM - {imbalance_method}")
+        plt.savefig(cm_filename)
+        mlflow.log_artifact(cm_filename)
         plt.close()
 
-        # Log the model
-        mlflow.sklearn.log_model(model, f"random_forest_model_tfidf_trigrams_imbalance_{imbalance_method}")
+        # 🔥 Save vectorizer (مهم جداً)
+        vec_filename = f"tfidf_vec_imbalance_{imbalance_method}.pkl"
+        with open(vec_filename, "wb") as f:
+            pickle.dump(vectorizer, f)
 
-# Step 7: Run experiments for different imbalance methods
-imbalance_methods = ['class_weights', 'oversampling', 'adasyn', 'undersampling', 'smote_enn']
+        mlflow.log_artifact(vec_filename)
+
+        # Log model
+        mlflow.sklearn.log_model(
+            model,
+            f"rf_tfidf_imbalance_{imbalance_method}"
+        )
+
+
+# Run experiments
+imbalance_methods = [
+    'class_weights',
+    'oversampling',
+    'adasyn',
+    'undersampling',
+    'smote_enn'
+]
 
 for method in imbalance_methods:
     run_imbalanced_experiment(method)

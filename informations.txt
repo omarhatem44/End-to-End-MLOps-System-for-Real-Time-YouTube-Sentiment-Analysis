@@ -2,5 +2,6 @@ S3-bucket --> mlflow-bucket-one
 ECR --> mlproj
 IAM --> mlproject_accessKeys.csv
 EC2 --> Youtube-Sentiment-Insights
-port-number --> :5000
+API-port-number --> :5000
+MlFLOW-port-number -->5001
 
