@@ -1,19 +1,23 @@
 # 🎬 YouTube Sentiment Insights
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python&logoColor=white"/>
-  <img src="https://img.shields.io/badge/LightGBM-Model-brightgreen?style=for-the-badge&logo=leaflet&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Flask-API-black?style=for-the-badge&logo=flask&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Chrome-Extension-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white"/>
-  <img src="https://img.shields.io/badge/AWS-Deployed-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white"/>
-  <img src="https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white"/>
-  <img src="https://img.shields.io/badge/DVC-Data%20Versioning-945DD6?style=for-the-badge&logo=dvc&logoColor=white"/>
-</p>
+<div align="center">
 
-<p align="center">
-  A <strong>production-ready MLOps pipeline</strong> for analyzing sentiment in YouTube comments — complete with a <strong>Chrome Extension</strong> for instant in-browser analysis, a containerized Flask API, DVC-versioned pipeline, and fully automated AWS deployment via GitHub Actions.
-</p>
+![Python](https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python&logoColor=white)
+![LightGBM](https://img.shields.io/badge/LightGBM-Model-brightgreen?style=for-the-badge&logo=leaflet&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-API-black?style=for-the-badge&logo=flask&logoColor=white)
+![Chrome](https://img.shields.io/badge/Chrome-Extension-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-Deployed-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
+![DVC](https://img.shields.io/badge/DVC-Data%20Versioning-945DD6?style=for-the-badge&logo=dvc&logoColor=white)
+![MLflow](https://img.shields.io/badge/MLflow-Experiment%20Tracking-0194E2?style=for-the-badge&logo=mlflow&logoColor=white)
+![DagsHub](https://img.shields.io/badge/DagsHub-MLflow%20Remote-orange?style=for-the-badge&logo=dagshub&logoColor=white)
+
+**A production-ready MLOps pipeline that classifies YouTube comments as positive, negative, or neutral — surfaced directly inside the browser via a Chrome Extension.**
+
+[🎥 Watch Demo](#-demo) · [🚀 Quick Start](#-getting-started) · [📊 Results](#-results) · [🌐 API Docs](#-api-reference)
+
+</div>
 
 ---
 
@@ -25,64 +29,72 @@
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
 - [Chrome Extension](#-chrome-extension)
-- [ML Pipeline](#-ml-pipeline)
+- [ML Pipeline](#-ml-pipeline-dvc)
+- [Experiment Tracking](#-experiment-tracking-mlflow)
 - [API Reference](#-api-reference)
 - [CI/CD Pipeline](#-cicd-pipeline)
 - [Getting Started](#-getting-started)
 - [Results](#-results)
+- [MLOps Skills Demonstrated](#-mlops-skills-demonstrated)
 
 ---
 
 ## 🔍 Overview
 
-**YouTube Sentiment Insights** is a full end-to-end ML system that classifies YouTube comments as **positive**, **negative**, or **neutral** — and surfaces the results directly inside the browser via a **Chrome Extension**.
+**YouTube Sentiment Insights** is a full end-to-end ML system that classifies YouTube comments into **positive**, **negative**, or **neutral** — and surfaces results directly in the browser via a **Chrome Extension**.
 
-The project demonstrates a complete **MLOps workflow**: data versioning with DVC, experiment tracking, model serving with Flask, containerization with Docker, and automated cloud deployment on AWS — all triggered via GitHub Actions CI/CD.
+The project demonstrates a complete **MLOps workflow**: data versioning with DVC, experiment tracking with MLflow (hosted on **DagsHub**), model serving with Flask, containerization with Docker, and automated cloud deployment on AWS — all triggered via GitHub Actions CI/CD.
 
 ### Key Highlights
-- ✅ **LightGBM** classifier with text preprocessing pipeline
-- ✅ **Chrome Extension** — analyze any YouTube video without leaving the browser
+
+- ✅ **LightGBM** classifier with TF-IDF text preprocessing pipeline
+- ✅ **Chrome Extension** — analyze any YouTube video's comments without leaving the browser
 - ✅ **Flask REST API** for real-time inference
+- ✅ **MLflow** experiment tracking hosted on **DagsHub** — full run history, metrics & artifacts logged remotely
 - ✅ **Dockerized** for reproducible, portable deployment
-- ✅ **AWS** cloud deployment (EC2 / ECR)
+- ✅ **AWS** cloud deployment (EC2 + ECR)
 - ✅ **DVC** for data, model, and pipeline versioning
 - ✅ **GitHub Actions** for fully automated CI/CD
 
 ---
+
 ## 🎥 Demo
 
-[![Watch Demo](demo.png)](https://youtu.be/vyts7NzzUWk)
+[![Watch Demo](https://github.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis/raw/main/demo.png)](https://youtu.be/vyts7NzzUWk)
+
+> Click the image to watch the full demo on YouTube ↑
 
 ---
 
 ## 🏗️ MLOps Architecture
 
 ```
-                        ┌────────────────────────────┐
-                        │      Chrome Extension       │
-                        │  (yt-chrome-plugin-frontend)│
-                        └────────────┬───────────────┘
-                                     │ HTTP Request
-                                     ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                          MLOps Pipeline                          │
-│                                                                  │
-│  ┌──────────┐    ┌──────────┐    ┌───────────┐   ┌──────────┐  │
-│  │   Data   │───▶│  Train   │───▶│ Artifacts │──▶│  Flask   │  │
-│  │ (DVC)    │    │LightGBM  │    │  /model   │   │   API    │  │
-│  └──────────┘    └──────────┘    └───────────┘   └──────────┘  │
-│        │               │                               │        │
-│  DVC Remote      Experiment                     ┌──────▼─────┐ │
-│  Storage         Tracking                       │   Docker   │ │
-│  (dvc.lock)      (params.yaml)                  │ Container  │ │
-│                                                 └──────┬─────┘ │
-│                                    GitHub Actions      │        │
-│                                    CI/CD ─────────────▶│        │
-│                                                 ┌──────▼─────┐ │
-│                                                 │    AWS     │ │
-│                                                 │ ECR + EC2  │ │
-│                                                 └────────────┘ │
-└──────────────────────────────────────────────────────────────────┘
+                     ┌─────────────────────────────┐
+                     │       Chrome Extension        │
+                     │  (yt-chrome-plugin-frontend)  │
+                     └─────────────┬────────────────┘
+                                   │ HTTP Request
+                                   ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                           MLOps Pipeline                             │
+│                                                                      │
+│  ┌──────────┐    ┌──────────┐    ┌───────────┐    ┌─────────────┐  │
+│  │   Data   │───▶│  Train   │───▶│ Artifacts │───▶│  Flask API  │  │
+│  │  (DVC)   │    │LightGBM  │    │  /model   │    │  :5000      │  │
+│  └──────────┘    └────┬─────┘    └───────────┘    └──────┬──────┘  │
+│        │              │                                   │         │
+│  DVC Remote     ┌─────▼──────┐                    ┌──────▼──────┐  │
+│  Storage        │   MLflow   │                    │   Docker    │  │
+│                 │  EC2:5001  │◀── Experiment ──   │  Container  │  │
+│                 │  S3 Bucket │    Tracking         └──────┬──────┘  │
+│                 └────────────┘                            │         │
+│                                         GitHub Actions    │         │
+│                                         CI/CD ───────────▶│         │
+│                                                    ┌──────▼──────┐  │
+│                                                    │  AWS ECR +  │  │
+│                                                    │  AWS EC2    │  │
+│                                                    └─────────────┘  │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -95,11 +107,12 @@ The project demonstrates a complete **MLOps workflow**: data versioning with DVC
 | **NLP & Preprocessing** | NLTK, Regex, Custom Text Pipeline |
 | **API Serving** | Flask, Gunicorn, Jinja2 Templates |
 | **Frontend / Extension** | Chrome Extension (JS, HTML, CSS) |
+| **Experiment Tracking** | MLflow (hosted on DagsHub) |
 | **Containerization** | Docker, `.dockerignore` |
 | **Data & Model Versioning** | DVC (`dvc.yaml`, `dvc.lock`, `.dvc/`) |
 | **Experiment Config** | `params.yaml` |
 | **CI/CD** | GitHub Actions (`.github/workflows/`) |
-| **Cloud Deployment** | AWS EC2, AWS ECR |
+| **Cloud Deployment** | AWS EC2, AWS ECR, AWS S3 |
 | **Version Control** | Git, GitHub |
 | **Language** | Python 3.10+ |
 
@@ -108,7 +121,7 @@ The project demonstrates a complete **MLOps workflow**: data versioning with DVC
 ## 📁 Project Structure
 
 ```
-Youtube-Sentiment-Insights/
+End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis/
 │
 ├── .github/
 │   └── workflows/              # GitHub Actions CI/CD pipeline
@@ -142,6 +155,7 @@ Youtube-Sentiment-Insights/
 │   └── background.js
 │
 ├── confusion_matrix_Test Data.png
+├── demo.png
 ├── Dockerfile
 ├── .dockerignore
 ├── .dvcignore
@@ -156,16 +170,18 @@ Youtube-Sentiment-Insights/
 
 One of the standout features of this project is the **Chrome Extension** — it brings the ML model directly into the browser, letting users analyze the sentiment of any YouTube video's comments without leaving the page.
 
-### How it works
+### How It Works
+
 1. User opens any YouTube video
 2. Clicks the extension icon in Chrome
 3. Extension fetches the video's comments
-4. Sends them to the deployed Flask API on AWS
-5. Displays a sentiment breakdown (positive / negative / neutral) in the popup
+4. Sends them to the deployed Flask API on AWS EC2
+5. Displays a sentiment breakdown **(positive / negative / neutral)** directly in the popup
 
 ### Install the Extension (Developer Mode)
-```
-1. Open Chrome and go to chrome://extensions/
+
+```bash
+1. Open Chrome → go to chrome://extensions/
 2. Enable "Developer mode" (top-right toggle)
 3. Click "Load unpacked"
 4. Select the yt-chrome-plugin-frontend/ folder
@@ -206,9 +222,43 @@ dvc pull   # Download tracked artifacts
 
 ---
 
+## 📈 Experiment Tracking (MLflow on DagsHub)
+
+Experiment tracking is handled by **MLflow**, hosted remotely on **DagsHub** — giving full visibility into every training run with zero infrastructure setup.
+
+🔗 **[View Live MLflow Experiments on DagsHub](https://dagshub.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.mlflow/#/experiments)**
+
+```
+MLflow Tracking Server (DagsHub)
+  ├── Host: DagsHub Remote MLflow Server
+  ├── Artifact Store: DagsHub artifact storage
+  └── Tracks: parameters, metrics, model artifacts per run
+```
+
+**Logged per experiment run:**
+- Hyperparameters from `params.yaml` (e.g., `num_leaves`, `learning_rate`, `n_estimators`)
+- Evaluation metrics: Accuracy, F1-Score, Precision, Recall
+- Model artifacts and confusion matrix
+
+**Configure MLflow to log to DagsHub:**
+```bash
+export MLFLOW_TRACKING_URI=https://dagshub.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.mlflow
+export MLFLOW_TRACKING_USERNAME=<your-dagshub-username>
+export MLFLOW_TRACKING_PASSWORD=<your-dagshub-token>
+```
+
+Or in Python:
+```python
+import mlflow
+
+mlflow.set_tracking_uri("https://dagshub.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.mlflow")
+```
+
+---
+
 ## 🌐 API Reference
 
-**Base URL:** `http://<your-server>:5000`
+**Base URL:** `http://<your-ec2-ip>:5000`
 
 ### `POST /predict`
 
@@ -231,6 +281,7 @@ Predict sentiment for a YouTube comment.
 ```
 
 ### `GET /health`
+
 ```json
 { "status": "healthy", "model": "loaded" }
 ```
@@ -271,6 +322,7 @@ Push to main branch
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Python 3.10+
 - Docker
 - DVC: `pip install dvc`
@@ -278,33 +330,39 @@ Push to main branch
 - Chrome Browser (for the extension)
 
 ### 1. Clone the repo
+
 ```bash
-git clone https://github.com/omarhatem44/Youtube-Sentiment-Insights.git
-cd Youtube-Sentiment-Insights
+git clone https://github.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.git
+cd End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis
 ```
 
 ### 2. Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 3. Pull data & model artifacts
+
 ```bash
 dvc pull
 ```
 
 ### 4. Reproduce the ML pipeline
+
 ```bash
 dvc repro
 ```
 
 ### 5. Run locally with Docker
+
 ```bash
 docker build -t sentiment-api .
 docker run -p 5000:5000 sentiment-api
 ```
 
 ### 6. Test the API
+
 ```bash
 curl -X POST http://localhost:5000/predict \
   -H "Content-Type: application/json" \
@@ -316,15 +374,15 @@ curl -X POST http://localhost:5000/predict \
 ## 📊 Results
 
 | Metric | Score |
-|--------|-------|
-| **Accuracy** | ~ 87% |
-| **F1-Score (Macro)** |  ~79%  |
-| **Precision** | ~77% |
-| **Recall** | ~77%|
+|---|---|
+| **Accuracy** | ~XX% |
+| **F1-Score (Macro)** | ~XX% |
+| **Precision** | ~XX% |
+| **Recall** | ~XX% |
 
-> Confusion matrix saved as `confusion_matrix_Test Data.png`
+> Metrics tracked and logged via **MLflow on DagsHub** — [view full experiment history →](https://dagshub.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.mlflow/#/experiments)
 
-![Confusion Matrix](confusion_matrix_Test%20Data.png)
+[![Confusion Matrix](https://github.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis/raw/main/confusion_matrix_Test%20Data.png)](https://github.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis/blob/main/confusion_matrix_Test%20Data.png)
 
 ---
 
@@ -334,7 +392,8 @@ curl -X POST http://localhost:5000/predict \
 |---|---|
 | **Data Versioning** | DVC tracks raw data, features & model artifacts in `artifacts/` |
 | **Pipeline Reproducibility** | `dvc repro` re-runs only changed stages defined in `dvc.yaml` |
-| **Experiment Tracking** | Hyperparameters managed in `params.yaml`, results logged per run |
+| **Experiment Tracking** | MLflow hosted on **DagsHub** — logs params, metrics & artifacts per run · [View Experiments ↗](https://dagshub.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.mlflow/#/experiments) |
+| **Artifact Storage** | MLflow artifacts stored via DagsHub remote storage |
 | **Model Serving** | Production Flask API with health check endpoint |
 | **Containerization** | Dockerfile + `.dockerignore` for consistent dev/prod environment |
 | **CI/CD Automation** | GitHub Actions builds, tests, and deploys on every push to `main` |
@@ -346,15 +405,15 @@ curl -X POST http://localhost:5000/predict \
 ## 👤 Author
 
 **Omar Hatem**
+
 - 🎓 Computer Science Student — Modern Academy for Computer Science, Cairo
 - 💼 ML Engineer | MLOps Enthusiast
-- 🔗 [GitHub](https://github.com/omarhatem44) | [LinkedIn](https://linkedin.com/in/your-profile)
+- 🔗 [GitHub](https://github.com/omarhatem44) · [LinkedIn](https://linkedin.com/in/your-profile)
 
 ---
 
-<p align="center">
-  <i>Built end-to-end with production MLOps practices in mind 🚀</i>
-</p>
+<div align="center">
 
+*Built end-to-end with production MLOps practices in mind 🚀*
 
-
+</div>
