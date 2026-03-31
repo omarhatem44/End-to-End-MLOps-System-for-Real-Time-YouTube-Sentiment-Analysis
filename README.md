@@ -297,23 +297,23 @@ Push to main branch
         │
         ▼
 ┌───────────────────┐
-│   1. Run Tests    │  ← Unit & integration tests
+│   1. Run Tests        │  ←Unit&integration tests
 └────────┬──────────┘
          │
          ▼
 ┌───────────────────┐
-│  2. Build Docker  │  ← docker build -t sentiment-api .
-│      Image        │
+│  2. Build Docker      │  ← docker build -t sentiment-api .
+│      Image            │
 └────────┬──────────┘
          │
          ▼
 ┌───────────────────┐
-│  3. Push to ECR   │  ← AWS Elastic Container Registry
+│  3. Push to ECR       │  ← AWS Elastic Container Registry
 └────────┬──────────┘
-         │
-         ▼
+           │
+           ▼
 ┌───────────────────┐
-│  4. Deploy to EC2 │  ← SSH → docker pull → docker run
+│  4. Deploy to EC2.    │  ← SSH →     docker pull → docker run
 └───────────────────┘
 ```
 
@@ -375,10 +375,9 @@ curl -X POST http://localhost:5000/predict \
 
 | Metric | Score |
 |---|---|
-| **Accuracy** | ~XX% |
-| **F1-Score (Macro)** | ~XX% |
-| **Precision** | ~XX% |
-| **Recall** | ~XX% |
+| **Accuracy** | 87% |
+| **F1-Score (Macro)** | 86% |
+| **AUC** | 92% |
 
 > Metrics tracked and logged via **MLflow on DagsHub** — [view full experiment history →](https://dagshub.com/omarhatem44/End-to-End-MLOps-System-for-Real-Time-YouTube-Sentiment-Analysis.mlflow/#/experiments)
 
